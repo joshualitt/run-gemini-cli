@@ -23,38 +23,32 @@ prompt = """
         <description>Follow these steps sequentially to resolve the issue.</description>
         <steps>
             <step id="1" name="Understand Project Standards">
-                The initial context provided to you includes a file tree. If you see a `GEMINI.md` or `CONTRIBUTING.md` file, use the GitHub MCP `get_file_contents` tool to read it first. This file may contain critical project-specific instructions, such as commands for building, testing, or linting.
+                The initial context provided to you includes a file tree. If you see a `GEMINI.md` or `CONTRIBUTING.md` file, use the `get_file_contents` tool to read it first. This file may contain critical project-specific instructions, such as commands for building, testing, or linting.
             </step>
             <step id="2" name="Acknowledge and Plan">
-                1. Use the GitHub MCP `update_issue` tool to add a "status/gemini-cli-fix" label to the issue.
+                1. Use the `update_issue` tool to add a "status/gemini-cli-fix" label to the issue.
                 2. Use the `gh issue comment` CLI tool command to post an initial comment. In this comment, you must:
                     - State the problem in your own words.
                     - Briefly describe the current state of the relevant code.
                     - Present a clear, actionable TODO list (using markdown checklists `[ ]`) outlining your plan to fix the issue.
             </step>
-            <step id="3" name="Create Branch locally">
+            <step id="3" name="Create Local Branch">
                 Use the `git` CLI tool to checkout a new branch for your work. Name it `!{echo $BRANCH_NAME}`. The command should be: `git checkout -b !{echo $BRANCH_NAME}`.
             </step>
-            <step id="4" name="Create Branch remotely">
-                Use the GitHub MCP `create_branch` tool to create a new branch for your work. Name it `!{echo $BRANCH_NAME}`.
+            <step id="4" name="Investigate and Implement">
+                Use tools like `search_code` and `get_file_contents` to explore the codebase and implement the necessary code changes. As your plan evolves, you must keep the TODO list in your initial comment updated by editing it with the command: `gh issue comment --edit-last --body "..."`
             </step>
-            <step id="5" name="Investigate and Implement">
-                Use tools, like the GitHub MCP `search_code` and GitHub MCP `get_file_contents` tools, to explore the codebase and implement the necessary code changes. As your plan evolves, you must keep the TODO list in your initial comment updated. To do this, use the `gh` command-line tool directly, as the MCP toolset does not support editing comments. Use the following command: `gh issue comment --edit-last --body "..."`
+            <step id="5" name="Verify Solution">
+                Follow the project-specific instructions from `GEMINI.md` or `CONTRIBUTING.md` to run builds, linters, and tests. Ensure your changes have not introduced any regressions. **If verification fails, you must analyze the output, return to Step 4 to implement a fix, and repeat this verification step. Do not proceed until all checks pass.**
             </step>
-            <step id="6" name="Verify Solution">
-                Follow the project-specific instructions from `GEMINI.md` or `CONTRIBUTING.md` to run builds, linters, and tests. Ensure your changes have not introduced any regressions.
+            <step id="6" name="Commit and Push Changes">
+                Commit the changes to the branch `!{echo $BRANCH_NAME}`, using the Conventional Commits specification for your commit message. After committing, push the branch to the remote repository using `git push --set-upstream origin !{echo $BRANCH_NAME}`. This command will create the remote branch automatically.
             </step>
-            <step id="7" name="Commit the changes">
-                Commit the changes to the branch `!{echo $BRANCH_NAME}`, using the Conventional Commits specification for commit messages. Use the `git` CLI tool, such as with `git status` to see changed/added/removed files, `git diff` to see changes, `git add .` to stage all changes files, and `git commit -m '<my commit message>'`.
+            <step id="7" name="Create Pull Request">
+                Once the solution is fully implemented and pushed, use the `create_pull_request` tool to open a PR. The PR description should clearly link to the issue and summarize the changes. **You must capture the pull request number from the output of this tool for the next step.**
             </step>
-            <step id="8" name="Create Pull Request">
-                Once the solution is fully implemented and verified, use the GitHub MCP `create_pull_request` tool to open a PR. The PR description should clearly link to the issue and summarize the changes you made.
-            </step>
-            <step id="9" name="Get Pull Request Number">
-                Once you have created a pull request, use the GitHub MCP `list_pull_requests` tool to get the pull request number.
-            </step>
-            <step id="10" name="Amend your Plan">
-                Use the `gh issue comment --edit-last` CLI tool command to edit your initial comment. You should update the markdown checklist in the initial comment to check the boxes of what is complete with `[x]`, and update the plan if any changes occured - such as skipping or adding a step. Also, suffix a link to your pull request, but just mentioning `#<PULL_REQUEST_NUMBER>`, and GitHub will automatically link it.
+            <step id="8" name="Finalize Plan">
+                Use the `gh issue comment --edit-last` CLI tool command to perform the final update on your plan. Update the markdown checklist to mark all tasks as complete (`[x]`). Conclude the comment by linking to your pull request using the `Fixes` keyword, like so: `Fixes #${PULL_REQUEST_NUMBER}`. Using this keyword will automatically close the issue when your pull request is merged.
             </step>
         </steps>
     </instructions>
